@@ -1,0 +1,10 @@
+Plugin history
+** Goal **
+-To be able to copy/paste a list of plugin updates from WordPress to the mod docs easily
+-To be able to tell what plugins have updated since the last security package
+
+** To Do **
+-Need to make sure "last updated" plugin dates are correct (need to test current plugins installed. Make sure the date the plugin is modified on the WEBSITE is displayed)
+
+NOTES:
+-Plugin Update Hook: https://stackoverflow.com/questions/24187990/plugin-update-hook
