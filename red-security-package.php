@@ -77,6 +77,7 @@ if ( ! class_exists( 'Red_Security_Package' ) ) {
 
 			/* Plugin History */
 			Plugin_History::init();
+			Plugin_History_Rest::init();
 		}
 
 	}
