@@ -69,8 +69,13 @@ class Plugin_History {
 
   public static function get_last_plugin_save_date() {
     $ph_options = self::get_options();
-    $dates = array_keys( $ph_options['plugin_reports'] );
-    return max( $dates );
+    if ( isset( $ph_options['plugin_reports'] ) && ! empty( $ph_options['plugin_reports'] ) ) {
+      $dates = array_keys( $ph_options['plugin_reports'] );
+      $dates = max( $dates );
+    } else {
+      $dates = null;
+    }
+    return $dates;
   }
 
   public static function get_last_plugin_save() {
@@ -202,7 +207,9 @@ class Plugin_History {
           $output .= '<td></td>';
         }
 
-        $output .= '<td class="ph-table-spacer"></td>'; // Space between last table and this one
+        if ( ! empty( $compare_plugins ) ) {
+          $output .= '<td class="ph-table-spacer"></td>'; // Space between last table and this one
+        }
 
         /**
          * Last Saved plugins
@@ -251,22 +258,21 @@ class Plugin_History {
     return $plugins;
   }
 
-  public static function combine_plugin_groups( $current_plugins, $compare_plugins ) {
-    /* Merge plugins with same name into same array */
+  public static function combine_plugin_groups( $current_plugins, $compare_plugins = array() ) {
     $combined_plugins = array();
 
-    // // DELETE AFTER TESTING
-    // $compare_plugins['old-test-plugin/old-test-plugin.php'] = array( 'Name' => 'Old Plugin (was deleted)', 'Version' => '7.5.6' ); // DELETED test
-    // $current_plugins['new-test-plugin/new-test-plugin.php'] = array( 'Name' => 'New Plugin (was just added)', 'Version' => '1.2.6' ); // ADDED test
-    // $compare_plugins['akismet/akismet.php']['Version'] = '1.5.2'; // DOWNGRADED test
-    // $compare_plugins['hello.php']['Version'] = '100.1.2'; // UPGRADED test
-
+    /* Merge plugins with same name into same array */
     foreach ( $current_plugins as $key => $current_plugin ) {
       if ( isset( $compare_plugins[$key] ) ) {
         $combined_plugins[$key] = array( 'current_plugin' => $current_plugin, 'compare_plugin' => $compare_plugins[$key] );
       } else {
         $combined_plugins[$key] = array( 'current_plugin' => $current_plugin );
       }
+    }
+
+    /* If there are no plugins to check bail early */
+    if ( empty( $compare_plugins ) ) {
+      return $combined_plugins;
     }
 
     /* Dump all non merged plugins instances into the new array */
@@ -279,6 +285,14 @@ class Plugin_History {
     /* Sort by alphabetical order */
     ksort( $combined_plugins );
     return $combined_plugins;
+  }
+
+  // DELETE AFTER TESTING (or move to another file)
+  public static function add_differences_for_testing( &$current_plugins, &$compare_plugins ) {
+    $current_plugins['new-test-plugin/new-test-plugin.php'] = array( 'Name' => 'New Plugin (was just added)', 'Version' => '1.2.6' ); // ADDED test
+    $compare_plugins['old-test-plugin/old-test-plugin.php'] = array( 'Name' => 'Old Plugin (was deleted)', 'Version' => '7.5.6' ); // DELETED test
+    $compare_plugins['akismet/akismet.php']['Version'] = '1.5.2'; // DOWNGRADED test
+    $compare_plugins['hello.php']['Version'] = '100.1.2'; // UPGRADED test
   }
 
 }
