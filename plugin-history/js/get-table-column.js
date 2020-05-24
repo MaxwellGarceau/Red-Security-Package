@@ -11,6 +11,7 @@
     }
 
     if (document.createRange) {
+
       cells.each(function(i, cell) {
         var rangeObj = document.createRange();
         rangeObj.selectNodeContents(cell);
@@ -39,7 +40,7 @@
     document.body.removeChild(el);
   };
 
-
+  /* Initializes copying for column headings */
   $(document).ready(function() {
     $('#plugin-history thead th').each(function(index) {
       $(this).click(function(e) {

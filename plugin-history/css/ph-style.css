@@ -10,6 +10,7 @@
 }
 
 .ph-plugin-table td,
+.ph-plugin-table th,
 tr.ph-tooltip:hover:after {
   padding: 5px;
 }
@@ -32,6 +33,7 @@ tr.ph-tooltip:hover:after {
   text-align: left;
   left: 0;
   width: 100vw; /* Sloppy, change later */
+  pointer-events: none;
 }
 
 /* Plugin States */

@@ -2,8 +2,7 @@
 /*
  Plugin Name: Red Security Package
  Plugin URI: https://redearthdesign.com/
- description: >-
-a plugin to create awesomeness and spread joy
+ Description: Security Package tools for Red Earth Design
  Version: 1.0.0
  Author: Red Earth Design
  Author URI: https://redearthdesign.com/
@@ -31,7 +30,9 @@ if ( ! class_exists( 'Red_Security_Package' ) ) {
 			}
 
 			self::define_constants();
-			self::load_files();
+			self::require_files();
+			self::init_modules();
+
 		}
 
 		/**
@@ -51,17 +52,33 @@ if ( ! class_exists( 'Red_Security_Package' ) ) {
 		 *
 		 * @return void
 		 */
-		static private function load_files() {
+		static private function require_files() {
 
 			/**
        * Classes
        */
+
+			/* Admin */
+			require_once RED_SP_DIR . 'class-red-sp-admin.php';
 
       /* Plugin History */
 			require_once RED_SP_DIR . 'plugin-history/class-red-sp-plugin-history.php';
       require_once RED_SP_DIR . 'plugin-history/class-red-sp-plugin-history-rest.php';
       require_once RED_SP_DIR . 'plugin-history/inc/js-variables.php';
 		}
+
+		/**
+		 * Init for security package modules
+		 */
+		static private function init_modules() {
+
+			/* Admin */
+			Red_Security_Package_Admin::init();
+
+			/* Plugin History */
+			Plugin_History::init();
+		}
+
 	}
 }
 

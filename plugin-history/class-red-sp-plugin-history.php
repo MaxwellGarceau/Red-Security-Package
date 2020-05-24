@@ -13,9 +13,8 @@ class Plugin_History {
   /**
    * Hooks
    */
-  public function execute_hooks() {
-    add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-    add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+  public static function init() {
+    add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_enqueue_scripts' ) );
   }
 
   public static function admin_enqueue_scripts() {
@@ -35,13 +34,6 @@ class Plugin_History {
   }
 
   /**
-   * Admin
-   */
-  public function add_admin_menu() {
-    add_submenu_page( 'options-general.php', 'Plugin History', 'Plugin History', 'manage_options', 'plugin-history', array( $this, 'output_admin_menu' ) );
-  }
-
-  /**
    * Data
    */
   public static function get_options() {
@@ -50,6 +42,10 @@ class Plugin_History {
       add_option( self::$ph_options_name, self::get_defaults() );
     }
     return get_option( self::$ph_options_name );
+  }
+
+  public static function erase_plugin_history() {
+    delete_option( self::$ph_options_name );
   }
 
   public function get_defaults() {
@@ -62,28 +58,37 @@ class Plugin_History {
 
   public static function save_plugin_data( $plugins = null ) {
     if ( $plugins === null ) {
-      $plugins = Plugin_History::get_plugins();
+      $plugins = self::get_plugins();
     }
 
     $ph_options = self::get_options();
     $today = self::get_todays_date();
-    $ph_options['plugin_reports'][] = array( $today => $plugins );
+    $ph_options['plugin_reports'][$today] = $plugins;
     update_option( self::$ph_options_name, $ph_options );
+  }
+
+  public static function get_last_plugin_save_date() {
+    $ph_options = self::get_options();
+    $dates = array_keys( $ph_options['plugin_reports'] );
+    return max( $dates );
+  }
+
+  public static function get_last_plugin_save() {
+    $ph_options = self::get_options();
+    $latest_date = self::get_last_plugin_save_date();
+    return $ph_options['plugin_reports'][$latest_date];
   }
 
   /**
    * HTML
    */
   public static function output_admin_menu() {
-    $current_plugins = Plugin_History::get_plugins(); // Hardcoded for now
-    // wp_die(var_dump($current_plugins));
-    // $plugin_reports = self::get_options();
-    // $plugin_reports = $plugin_reports['plugin_reports'];
-    // $plugin_reports = array_values( $plugin_reports[0] )[0];
-// wp_die(var_dump($current_plugins));
+    $current_plugins = self::get_plugins(); // Hardcoded for now
+    $last_saved_plugins = self::get_last_plugin_save();
+    $last_plugin_save_date = self::get_last_plugin_save_date() ? self::get_last_plugin_save_date() : 'Never';
+
     $fake_old_plugins = $current_plugins;
     $fake_old_plugins['akismet/akismet.php']['Version'] = '2.21';
-    self::combine_plugin_groups($current_plugins,$fake_old_plugins);
 
     $output .= '<div class="ph-wrap">';
 
@@ -95,7 +100,9 @@ class Plugin_History {
 
         $output .= '<div class="ph-table-container">';
 
-          $output .= self::get_plugin_table( $current_plugins, $current_plugins );
+          $output .= self::get_plugin_table( $current_plugins, $last_saved_plugins );
+
+          $output .= '<p>Last plugin save was: <span class="ph-notice">' . $last_plugin_save_date . '</span></p>';
 
           $output .= self::get_save_plugins_button();
 
@@ -141,14 +148,16 @@ class Plugin_History {
 
     $combined_plugins = self::combine_plugin_groups( $current_plugins, $compare_plugins );
     foreach ( $combined_plugins as $folder_file => $plugin ) {
+
       /**
        * Compare current and old plugin
        */
       $current_plugin = $plugin['current_plugin'];
       $compare_plugin = $plugin['compare_plugin'];
-      $plugin_row_classes = array();
       $has_current_plugin = isset( $current_plugin ) && !empty( $current_plugin );
       $has_compare_plugin = isset( $compare_plugin ) && !empty( $compare_plugin );
+
+      $plugin_row_classes = array();
 
       /* Plugin was deleted */
       if ( ! $has_current_plugin && $has_compare_plugin ) {
@@ -193,9 +202,7 @@ class Plugin_History {
           $output .= '<td></td>';
         }
 
-        // if ( $has_current_plugin && $has_compare_plugin ) {
-          $output .= '<td class="ph-table-spacer"></td>'; // Space between last table and this one
-        // }
+        $output .= '<td class="ph-table-spacer"></td>'; // Space between last table and this one
 
         /**
          * Last Saved plugins
@@ -204,7 +211,7 @@ class Plugin_History {
           $output .= '<td>' . $compare_plugin['Name'] . '</td>';
           $output .= '<td>' . $compare_plugin['Version'] . '</td>';
           $output .= '<td>' . date( 'm/d/Y', $compare_plugin['last_updated'] ) . '</td>';
-        } else {
+        } else if ( ! empty( $compare_plugins ) ) { // Make sure we have compare plugins
           /* Placeholders */
           $output .= '<td></td>';
           $output .= '<td></td>';
@@ -236,7 +243,6 @@ class Plugin_History {
 
   public static function get_plugins() {
     $plugins = get_plugins(); // Start with core WP plugin info
-    // wp_die(var_dump($plugins));
     /* Add additional information to plugins */
     foreach ( $plugins as $folder_file => &$plugin ) {
       $path = WP_PLUGIN_DIR . '/' . $folder_file;
@@ -249,11 +255,11 @@ class Plugin_History {
     /* Merge plugins with same name into same array */
     $combined_plugins = array();
 
-    // DELETE AFTER TESTING
-    $compare_plugins['old-test-plugin/old-test-plugin.php'] = array( 'Name' => 'Old Plugin (was deleted)', 'Version' => '7.5.6' ); // DELETED test
-    $current_plugins['new-test-plugin/new-test-plugin.php'] = array( 'Name' => 'New Plugin (was just added)', 'Version' => '1.2.6' ); // ADDED test
-    $compare_plugins['akismet/akismet.php']['Version'] = '1.5.2'; // DOWNGRADED test
-    $compare_plugins['hello.php']['Version'] = '100.1.2'; // UPGRADED test
+    // // DELETE AFTER TESTING
+    // $compare_plugins['old-test-plugin/old-test-plugin.php'] = array( 'Name' => 'Old Plugin (was deleted)', 'Version' => '7.5.6' ); // DELETED test
+    // $current_plugins['new-test-plugin/new-test-plugin.php'] = array( 'Name' => 'New Plugin (was just added)', 'Version' => '1.2.6' ); // ADDED test
+    // $compare_plugins['akismet/akismet.php']['Version'] = '1.5.2'; // DOWNGRADED test
+    // $compare_plugins['hello.php']['Version'] = '100.1.2'; // UPGRADED test
 
     foreach ( $current_plugins as $key => $current_plugin ) {
       if ( isset( $compare_plugins[$key] ) ) {
@@ -276,5 +282,3 @@ class Plugin_History {
   }
 
 }
-$plugin_history = Plugin_History::get_instance();
-$plugin_history->execute_hooks();
