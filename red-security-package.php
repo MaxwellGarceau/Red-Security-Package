@@ -63,6 +63,7 @@ if ( ! class_exists( 'Red_Security_Package' ) ) {
 
       /* Plugin History */
 			require_once RED_SP_DIR . 'plugin-history/class-red-sp-plugin-history.php';
+			require_once RED_SP_DIR . 'plugin-history/class-red-sp-plugin-history-display.php';
       require_once RED_SP_DIR . 'plugin-history/class-red-sp-plugin-history-rest.php';
       require_once RED_SP_DIR . 'plugin-history/inc/js-variables.php';
 		}

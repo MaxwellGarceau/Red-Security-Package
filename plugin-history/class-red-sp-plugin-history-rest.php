@@ -23,6 +23,11 @@ class Plugin_History_Rest extends Plugin_History {
       'methods' => 'POST',
       'callback' => array( __CLASS__, 'post_plugin_data' )
     ));
+
+    register_rest_route('plugin-history/v1', 'erase_plugin_history', array(
+      'methods' => 'DELETE',
+      'callback' => array( __CLASS__, 'erase_plugin_history' )
+    ));
   }
 
   public static function get_plugin_data() {
@@ -32,6 +37,12 @@ class Plugin_History_Rest extends Plugin_History {
   public static function post_plugin_data() {
     // Save plugin data
     parent::save_plugin_data();
+    wp_send_json_success();
+  }
+
+  public static function erase_plugin_history() {
+    // Save plugin data
+    parent::erase_plugin_history();
     wp_send_json_success();
   }
 }

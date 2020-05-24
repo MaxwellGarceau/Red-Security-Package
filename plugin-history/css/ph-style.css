@@ -79,6 +79,16 @@ tr.ph-tooltip:hover:after {
   content: "Plugin was downgraded";
 }
 
+/* Buttons */
+.ph-button-container > *,
+.wp-core-ui .ph-button-container > * {
+  margin-right: 10px;
+}
+.ph-button-container > *:last-child,
+.wp-core-ui .ph-button-container > *:last-child {
+  margin-right: 0;
+}
+
 /* Helpers */
 .ph-table-spacer {
   width: 50px;

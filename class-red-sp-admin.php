@@ -27,7 +27,7 @@ class Red_Security_Package_Admin {
       'Plugin History',
       'manage_options',
       'plugin-history',
-      array( 'Plugin_History', 'output_admin_menu' ) );
+      array( 'Plugin_History_Display', 'output_admin_menu' ) );
   }
 
   static public function admin_page() {
