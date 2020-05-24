@@ -1,0 +1,92 @@
+/* Layout */
+.ph-all-tables-container {
+  display: flex;
+}
+
+/* General Styling */
+.ph-plugin-table th {
+  text-align: left;
+  cursor: pointer;
+}
+
+.ph-plugin-table td,
+tr.ph-tooltip:hover:after {
+  padding: 5px;
+}
+
+.ph-plugin-name-header {
+  position: relative;
+}
+.ph-plugin-table {
+  margin-top: calc(10px + 25px); /* Top margin makes up for .ph-plugin-name-header:before "top" value */
+  margin-bottom: 10px;
+}
+
+/* Heading title for current and compared plugins */
+.ph-plugin-name-header:before {
+  position: absolute;
+  top: -25px;
+  content: attr(title);
+  display: block;
+  font-size: 24px;
+  text-align: left;
+  left: 0;
+  width: 100vw; /* Sloppy, change later */
+}
+
+/* Plugin States */
+.ph-added {
+  background-color: #46b450;
+  color: #fff;
+}
+.ph-deleted {
+  background-color: #dc3232;
+  color: #fff;
+}
+.ph-upgraded {
+  background-color: #ffb900;
+}
+.ph-downgraded {
+  background-color: #fff8e5;
+}
+
+/* Tooltips */
+[data-tooltip],
+.ph-tooltip {
+  cursor: pointer;
+}
+[data-tooltip]:hover:after,
+.ph-tooltip:hover:after {
+	background: inherit;
+  color: inherit;
+	content: attr(data-tooltip);
+}
+tr.ph-tooltip:hover:after {
+  display: table-cell;
+}
+.ph-added:hover:after {
+  content: "Plugin was added";
+}
+.ph-deleted:hover:after {
+  content: "Plugin was deleted";
+}
+.ph-upgraded:hover:after {
+  content: "Plugin was upgraded";
+}
+.ph-downgraded:hover:after {
+  content: "Plugin was downgraded";
+}
+
+/* Helpers */
+.ph-table-spacer {
+  width: 50px;
+  background-color: #f1f1f1;
+  color: #f1f1f1;
+  pointer-events: none;
+}
+
+.ph-notice {
+  font-style: italic;
+  color: #dc3232;
+  font-weight: 600;
+}
