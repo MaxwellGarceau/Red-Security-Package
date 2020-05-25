@@ -89,6 +89,17 @@ tr.ph-tooltip:hover:after {
   margin-right: 0;
 }
 
+/* Plugin Set History Buttons */
+.ph-plugin-history-set-button-container {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 800px;
+}
+.ph-plugin-history-set-button-container > * {
+  margin-right: 10px;
+  margin-bottom: 15px;
+}
+
 /* Helpers */
 .ph-table-spacer {
   width: 50px;

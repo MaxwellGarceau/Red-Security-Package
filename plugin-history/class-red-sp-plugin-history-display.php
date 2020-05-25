@@ -6,8 +6,13 @@ class Plugin_History_Display extends Plugin_History {
    */
   public static function output_admin_menu() {
     $current_plugins = parent::get_plugins(); // Hardcoded for now
-    $last_saved_plugins = parent::get_last_plugin_save();
-    $last_plugin_save_date = parent::get_last_plugin_save_date() ? parent::get_last_plugin_save_date() : 'Never';
+    $ph_options = parent::get_options();
+    $active_plugin_set_timestamp = parent::get_active_plugin_set();
+    $compare_plugins = $ph_options['plugin_reports'][$active_plugin_set_timestamp];
+
+    /* Format dates */
+    $current_plugin_save_date = $active_plugin_set_timestamp ? date( parent::$ph_save_date_format, $active_plugin_set_timestamp ) : 'Never';
+    $last_plugin_save_date = parent::get_last_plugin_save_date() ? date( parent::$ph_save_date_format, parent::get_last_plugin_save_date() ) : 'Never';
 
     $output .= '<div class="ph-wrap">';
 
@@ -19,19 +24,25 @@ class Plugin_History_Display extends Plugin_History {
 
         $output .= '<div class="ph-table-container">';
 
-          $output .= self::get_plugin_table( $current_plugins, $last_saved_plugins );
+          $output .= self::get_plugin_table( $current_plugins, $compare_plugins );
 
-          $output .= '<p>Last plugin save was: <span class="ph-notice">' . $last_plugin_save_date . '</span></p>';
+          $output .= '<p>Current plugin set being viewed is: <span class="ph-notice">' . $current_plugin_save_date . '</span></p>';
+
+          $output .= '<p>Last plugin set save was: <span class="ph-notice">' . $last_plugin_save_date . '</span></p>';
 
           $output .= '<div class="ph-button-container">';
 
           $output .= self::get_save_plugins_button();
 
+          $output .= self::get_delete_active_plugin_set_button();
+
           $output .= self::get_delete_plugins_button();
 
           $output .= '</div>';
 
-          $output .= self::display_plugin_changes( $current_plugins, $last_saved_plugins );
+          $output .= self::display_plugin_history_sets( $current_plugins, $compare_plugins );
+
+          $output .= self::display_plugin_changes( $current_plugins, $compare_plugins );
 
         $output .= '</div>';
 
@@ -181,8 +192,38 @@ class Plugin_History_Display extends Plugin_History {
     return $html;
   }
 
+  public static function display_plugin_history_sets() {
+    $ph_options = parent::get_options();
+    $history_sets = $ph_options['plugin_reports'];
+    uksort( $history_sets, function( $a, $b ) {
+      return $b - $a;
+    } );
+
+    $html .= '<h4>Plugin History Sets</h4>';
+    $html .= '<ul class="ph-plugin-history-set-button-container">';
+
+    foreach ( $history_sets as $timestamp => $history_set ) {
+      $classes = array( 'ph-change-active-plugin-set', 'button' );
+      $active_plugin_set_timestamp = parent::get_active_plugin_set();
+
+      if ( $timestamp === $active_plugin_set_timestamp ) {
+        $classes[] = 'active';
+        $classes[] = 'button-primary';
+      }
+
+      $html .= '<li><a href="' . get_admin_url() . 'admin.php?page=plugin-history&timestamp=' . $timestamp . '" class="' . implode( ' ', $classes ) . '" data-plugin-set="' . $timestamp . '">' . date( parent::$ph_save_date_format, $timestamp ) . '</a></li>';
+    }
+
+    $html .= '</ul>';
+    return $html;
+  }
+
   public static function get_save_plugins_button() {
     return '<button id="ph-save-plugin-data" class="button button-primary">Save Plugin Data</button>';
+  }
+
+  public static function get_delete_active_plugin_set_button() {
+    return '<button id="ph-delete-active-plugin-set" class="button button-primary">Delete Active Plugin Set</button>';
   }
 
   public static function get_delete_plugins_button() {

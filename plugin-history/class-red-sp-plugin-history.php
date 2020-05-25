@@ -3,6 +3,8 @@ class Plugin_History {
 
   private static $instance;
   public static $ph_options_name = 'ph_options';
+  public static $ph_save_date_format = 'D M d, Y G:i';
+
   public static function get_instance() {
     if ( self::$instance == null ) {
       self::$instance = new Plugin_History();
@@ -34,7 +36,7 @@ class Plugin_History {
   }
 
   /**
-   * Data
+   * Options
    */
   public static function get_options() {
     /* NOTE: Calls get_option twice. Need to rethink. */
@@ -49,16 +51,20 @@ class Plugin_History {
       'plugin_reports' => array(
         // Key is date, value is plugin data
       ),
+      'active_plugin_set' => '',
     );
   }
 
+  /**
+   * Plugin Data
+   */
   public static function save_plugin_data( $plugins = null ) {
     if ( $plugins === null ) {
       $plugins = self::get_plugins();
     }
 
     $ph_options = self::get_options();
-    $today = self::get_todays_date();
+    $today = self::get_todays_timestamp();
     $ph_options['plugin_reports'][$today] = $plugins;
     update_option( self::$ph_options_name, $ph_options );
   }
@@ -66,6 +72,19 @@ class Plugin_History {
   public static function erase_plugin_history() {
     $ph_options = self::get_options();
     $ph_options['plugin_reports'] = array();
+    update_option( self::$ph_options_name, $ph_options );
+  }
+
+  public static function delete_active_plugin_set( $timestamp = null ) {
+    $ph_options = self::get_options();
+
+    /* If $timestamp is not passed in get it from 'get_active_plugin_set' */
+    if ( $timestamp === null ) {
+      $timestamp = self::get_active_plugin_set();
+    }
+
+    /* Remove array entry and update all options */
+    unset( $ph_options['plugin_reports'][$timestamp] );
     update_option( self::$ph_options_name, $ph_options );
   }
 
@@ -87,10 +106,23 @@ class Plugin_History {
   }
 
   /**
+   * Active Plugin Set Functions
+   */
+  public static function get_active_plugin_set() {
+    // wp_die(var_dump(parse_url($_SERVER['REQUEST_URI'])));
+    if ( isset( $_GET['timestamp'] ) && $_GET['timestamp'] !== '' ) {
+      $timestamp = (int) $_GET['timestamp'];
+    } else {
+      $timestamp = self::get_last_plugin_save_date();
+    }
+    return $timestamp;
+  }
+
+  /**
    * Helpers
    */
-  public static function get_todays_date() {
-    return date( 'D M d, Y G:i' );
+  public static function get_todays_timestamp( $date = null ) {
+    return strtotime( date( self::$ph_save_date_format ) );
   }
 
   public static function get_plugins() {
