@@ -127,12 +127,35 @@ class Plugin_History {
 
   public static function get_plugins() {
     $plugins = get_plugins(); // Start with core WP plugin info
+
+    /* Additional plugins to merge */
+    $mu_plugins = get_mu_plugins(); // Include MU plugins
+
+    /* Merge Plugins */
+    $plugins = array_merge( $plugins, $mu_plugins );
+
+    /* Filter unwanted plugins */
+    foreach ( $plugins as $key => $plugin ) {
+      $excluded_plugins = self::excluded_plugins_list();
+
+      if ( in_array( $key, $excluded_plugins ) ) {
+        unset( $plugins[$key] );
+      }
+    }
+
     /* Add additional information to plugins */
     foreach ( $plugins as $folder_file => &$plugin ) {
       $path = WP_PLUGIN_DIR . '/' . $folder_file;
       $plugin['last_updated'] = filemtime( $path );
     }
     return $plugins;
+  }
+
+  public static function excluded_plugins_list() {
+    return array(
+      'pantheon.php',
+      'assets-manager.php',
+    );
   }
 
   public static function combine_plugin_groups( $current_plugins, $compare_plugins = array() ) {

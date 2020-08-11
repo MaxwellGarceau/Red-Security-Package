@@ -85,6 +85,14 @@ class Plugin_History_Display extends Plugin_History {
     </thead>';
 
     $combined_plugins = parent::combine_plugin_groups( $current_plugins, $compare_plugins );
+
+    /* Sort $combined_plugins alphabetically by plugin Name (NOT plugin folder name) */
+    usort( $combined_plugins, function( $a, $b ) {
+      $a_name_lc = strtolower( $a['current_plugin']['Name'] );
+      $b_name_lc = strtolower( $b['current_plugin']['Name'] );
+      return strcmp( $a_name_lc, $b_name_lc );
+    } );
+
     foreach ( $combined_plugins as $folder_file => $plugin ) {
 
       /**
